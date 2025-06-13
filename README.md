@@ -12,7 +12,19 @@
 
 ## 安装
 
-本项目使用 [uv](https://docs.astral.sh/uv/) 进行依赖管理。
+通过 [pip](https://pip.pypa.io/en/stable/) 从 PyPI 安装 BeRay Python SDK：
+
+```bash
+pip install beray
+```
+
+*提示：如果您在中国大陆访问 PyPI 速度较慢，可以临时使用国内的镜像源来加速：*
+
+```bash
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple beray
+```
+
+对于开发者来说，本项目使用 [uv](https://docs.astral.sh/uv/) 进行依赖管理。
 
 1.  克隆或下载项目后，进入项目目录：
     ```bash
