@@ -12,15 +12,15 @@
 
 ## 安装
 
-本项目使用 [Poetry](https://python-poetry.org/) 进行依赖管理。
+本项目使用 [uv](https://docs.astral.sh/uv/) 进行依赖管理。
 
 1.  克隆或下载项目后，进入项目目录：
     ```bash
     cd beray
     ```
-2.  使用 Poetry 安装依赖：
+2.  使用 uv 安装依赖：
     ```bash
-    poetry install
+    uv sync
     ```
 
 ## 快速上手
@@ -340,5 +340,5 @@ except APIError as e:
 要运行完整的测试套件，请确保已安装开发依赖，然后执行：
 
 ```bash
-poetry run pytest
+uv run pytest
 ```
