@@ -1,9 +1,9 @@
 import requests
-import sseclient
-from typing import Optional, Dict, Any, List, Iterator
+import json
+from typing import Optional, Dict, Any, List, Iterator, Union
 import mimetypes
 
-from exceptions import (
+from .exceptions import (
     APIError,
     AuthenticationError,
     ConflictError,
@@ -180,6 +180,7 @@ class BeRayClient:
     def stream_task_updates(self, task_id: int) -> Iterator[Dict[str, Any]]:
         """
         Streams task status updates and events via Server-Sent Events (SSE).
+        This implementation manually parses the SSE stream for robustness.
 
         Args:
             task_id: The ID of the task to stream.
@@ -193,13 +194,29 @@ class BeRayClient:
 
         # Using a fresh request for streaming connection
         response = requests.get(url, headers=headers, stream=True)
-        response.raise_for_status() # Raise for non-2xx codes before streaming
+        response.raise_for_status()  # Raise for non-2xx codes before streaming
 
-        client = sseclient.SSEClient(response)
-        for event in client.events():
-            if event.data:
-                yield event.data
+        for line in response.iter_lines():
+            if not line:
+                # Empty lines are message separators in SSE.
+                continue
 
+            # SSE lines are expected to be utf-8 encoded.
+            decoded_line = line.decode('utf-8')
+
+            # We are only interested in lines that start with "data:".
+            if decoded_line.startswith('data:'):
+                # Remove the "data:" prefix and any leading whitespace.
+                data_str = decoded_line[5:].strip()
+                if data_str:
+                    try:
+                        # Parse the JSON string into a dictionary.
+                        data = json.loads(data_str)
+                        yield data
+                    except json.JSONDecodeError:
+                        # If parsing fails, we can log it and continue.
+                        print(f"Warning: Could not decode JSON from SSE data: {data_str}")
+                        continue
 
     def stop_task(self, task_id: int) -> Dict[str, Any]:
         """
@@ -267,7 +284,7 @@ class BeRayClient:
 
         return response
 
-    def upload_file(self, task_id: int, path: str, content: bytes or str, content_type: Optional[str] = None) -> Dict[str, Any]:
+    def upload_file(self, task_id: int, path: str, content: Union[bytes, str], content_type: Optional[str] = None) -> Dict[str, Any]:
         """
         Updates or creates a file in a task's working directory.
 

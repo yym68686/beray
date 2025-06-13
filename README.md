@@ -43,13 +43,24 @@ try:
     print(f"登录成功！用户信息: {user_info['user']}")
 
     # 3. 创建一个新任务
-    task_goal = "请分析最近一周的市场趋势报告，并总结要点。"
+    task_goal = "帮我写一个简单的python脚本打印hello world"
     new_task = client.create_task(goal=task_goal)
     print(f"成功创建任务: ID - {new_task['id']}, 状态 - {new_task['status']}")
 
     # 4. 列出所有任务
     all_tasks = client.list_tasks()
     print(f"你一共有 {len(all_tasks)} 个任务。")
+
+    # 5. 实时监听任务更新 (可选)
+    # 获取刚刚创建任务的ID
+    task_id = new_task['id']
+    print(f"\n--- 开始监听任务 {task_id} 的更新 ---")
+    try:
+        for update in client.stream_task_updates(task_id=task_id):
+            print(f"收到更新: {update}")
+        print(f"--- 任务 {task_id} 的更新流已结束 ---")
+    except Exception as e:
+        print(f"流式连接出错: {e}")
 
 except APIError as e:
     print(f"发生错误: {e.status_code} - {e.error_detail}")
@@ -195,12 +206,30 @@ print(task_details)
 
 `stream_task_updates(task_id: int)`
 
-通过 Server-Sent Events (SSE) 实时流式获取任务的状态和事件更新。这是一个生成器。
+通过 Server-Sent Events (SSE) 实时流式获取任务的状态和事件更新。这是一个生成器，会产生包含更新信息的字典。
 
 ```python
+import json
+
+# 假设 client 已经初始化并登录
+
+# 1. 创建一个新任务来监听
+task_goal = "1.帮我写一个简单的python脚本打印hello world"
 try:
-    for update in client.stream_task_updates(task_id=1):
-        print(f"收到更新: {update}")
+    new_task = client.create_task(goal=task_goal)
+    task_id = new_task['id']
+    print(f"任务 {task_id} 已创建，开始监听更新...")
+
+    # 2. 实时获取该任务的更新
+    for update in client.stream_task_updates(task_id=task_id):
+        # update 是一个包含任务状态或事件的字典
+        # 使用 json.dumps 美化输出
+        print(json.dumps(update, indent=2, ensure_ascii=False))
+
+    print(f"--- 任务 {task_id} 的更新流已结束 ---")
+
+except APIError as e:
+    print(f"API 操作失败: {e}")
 except Exception as e:
     print(f"流式连接出错: {e}")
 ```
