@@ -138,7 +138,7 @@ class BeRayClient:
     # Task Management
     # #################################################
 
-    def create_task(self, goal: str) -> Dict[str, Any]:
+    def create_task(self, goal: str, tools: Optional[List[str]] = None) -> Dict[str, Any]:
         """
         Creates a new AI assistant task.
 
@@ -149,7 +149,7 @@ class BeRayClient:
             A dictionary representing the created task.
         """
         url = f"{self.api_base_url}/tasks/"
-        response = self._session.post(url, json={"goal": goal})
+        response = self._session.post(url, json={"goal": goal, "tools": tools})
         return self._handle_response(response)
 
     def list_tasks(self) -> List[Dict[str, Any]]:

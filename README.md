@@ -78,6 +78,15 @@ except APIError as e:
     print(f"发生错误: {e.status_code} - {e.error_detail}")
 ```
 
+client.create_task 支持传入 tools 参数，用于指定任务使用的工具。tools 支持 mcp，示例：
+
+```python
+tools = [
+    {"uni-api Docs": {"url": "https://gitmcp.io/yym68686/uni-api"}},
+]
+client.create_task(goal=task_goal, tools=tools)
+```
+
 ## API 详解
 
 ### 客户端初始化
